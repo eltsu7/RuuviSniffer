@@ -8,6 +8,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 from config import UPDATE_TIMEOUT, INFLUX_TOKEN, INFLUX_HOST, INFLUX_ORG, INFLUX_BUCKET
 
+
 log = logging.Logger("ruuvisniffer")
 log.addHandler(logging.StreamHandler(sys.stdout))
 
