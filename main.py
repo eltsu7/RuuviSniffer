@@ -6,10 +6,10 @@ from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+from config import UPDATE_TIMEOUT, INFLUX_TOKEN, INFLUX_HOST, INFLUX_ORG, INFLUX_BUCKET
+
 log = logging.Logger("ruuvisniffer")
 log.addHandler(logging.StreamHandler(sys.stdout))
-
-from config import UPDATE_TIMEOUT, INFLUX_TOKEN, INFLUX_HOST, INFLUX_ORG, INFLUX_BUCKET
 
     
 class RuuviSniffer:
