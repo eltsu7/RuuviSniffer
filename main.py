@@ -6,7 +6,7 @@ from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-from config import UPDATE_TIMEOUT, INFLUX_TOKEN, INFLUX_HOST, INFLUX_ORG, INFLUX_BUCKET
+from config import UPDATE_TIMEOUT, INFLUX_TOKEN, INFLUX_HOST, INFLUX_ORG, INFLUX_BUCKET, SENSORS
 
 
 log = logging.Logger("ruuvisniffer")
@@ -25,6 +25,11 @@ class RuuviSniffer:
 
     def handle_data(self, bluetooth_data):
         mac = bluetooth_data[0].replace(':','')
+
+        # Don't do anything to not specified sensors
+        if mac not in SENSORS.values():
+            return
+
         sensor_data = bluetooth_data[1]
         self.data[mac] = sensor_data
 
