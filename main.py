@@ -46,7 +46,7 @@ class RuuviSniffer:
 
             self.database.write(INFLUX_BUCKET, record=point)
 
-        log.info(f"{datetime.now()} - Sent data from: {self.data.keys()}")
+        log.info(f"{datetime.now()} - Sent data from: {', '.join(self.data.keys())}")
         self.data = {}
         self.latest_update = datetime.now()
 
