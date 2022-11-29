@@ -1,7 +1,7 @@
 UPDATE_TIMEOUT = 5
 
 SENSORS = {
-    "name": "mac",
+    "mac": "name",
 }
 
 INFLUX_BUCKET = ""

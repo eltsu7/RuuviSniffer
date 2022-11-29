@@ -27,7 +27,7 @@ class RuuviSniffer:
         mac = bluetooth_data[0].replace(':','')
 
         # Don't do anything to not specified sensors
-        if mac not in SENSORS.values():
+        if mac not in SENSORS.keys():
             return
 
         sensor_data = bluetooth_data[1]
@@ -43,6 +43,7 @@ class RuuviSniffer:
                 point.field(field=measurement, value=data[measurement])
 
             point.tag(key="mac", value=mac)
+            point.tag(key="name", value=SENSORS[mac])
 
             self.database.write(INFLUX_BUCKET, record=point)
 
