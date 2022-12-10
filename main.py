@@ -4,6 +4,7 @@ import sys
 
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.exceptions import InfluxDBError
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 from config import UPDATE_TIMEOUT, INFLUX_TOKEN, INFLUX_HOST, INFLUX_ORG, INFLUX_BUCKET, SENSORS
@@ -45,7 +46,14 @@ class RuuviSniffer:
             point.tag(key="mac", value=mac)
             point.tag(key="name", value=SENSORS[mac])
 
-            self.database.write(INFLUX_BUCKET, record=point)
+            try:
+                self.database.write(INFLUX_BUCKET, record=point)
+            except InfluxDBError as e:
+                log.info(f"InfluxDBError: Error sending data from {mac} to {INFLUX_BUCKET}")
+                log.info(f"Error object: {e.__dict__}")
+            except Exception as e:
+                log.info(f"Error sending data from {mac} to {INFLUX_BUCKET}")
+                log.info(f"Error object: {e.__dict__}")
 
         log.info(f"{datetime.now()} - Sent data from: {', '.join(self.data.keys())}")
         self.data = {}
