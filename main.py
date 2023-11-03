@@ -7,25 +7,33 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.exceptions import InfluxDBError
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-from config import UPDATE_TIMEOUT, INFLUX_TOKEN, INFLUX_HOST, INFLUX_ORG, INFLUX_BUCKET, SENSORS
+from config import (
+    UPDATE_TIMEOUT,
+    INFLUX_TOKEN,
+    INFLUX_HOST,
+    INFLUX_ORG,
+    INFLUX_BUCKET,
+    SENSORS,
+)
 
 
 log = logging.Logger("ruuvisniffer")
 log.addHandler(logging.StreamHandler(sys.stdout))
 
-    
+
 class RuuviSniffer:
     def __init__(self) -> None:
         self.latest_update: datetime = datetime.now()
         self.data: dict = {}
-        self.database = InfluxDBClient(url=INFLUX_HOST, token=INFLUX_TOKEN, org=INFLUX_ORG) \
-                .write_api(write_options=SYNCHRONOUS)
+        self.database = InfluxDBClient(
+            url=INFLUX_HOST, token=INFLUX_TOKEN, org=INFLUX_ORG
+        ).write_api(write_options=SYNCHRONOUS)
 
     def start(self):
         RuuviTagSensor.get_data(self.handle_data)
 
     def handle_data(self, bluetooth_data):
-        mac = bluetooth_data[0].replace(':','')
+        mac = bluetooth_data[0].replace(":", "")
 
         # Don't do anything to not specified sensors
         if mac not in SENSORS.keys():
@@ -38,7 +46,7 @@ class RuuviSniffer:
             self.upload_data()
 
     def upload_data(self):
-        for mac, data in self.data.items():            
+        for mac, data in self.data.items():
             point = Point("ruuvi_measurements")
             for measurement in data:
                 point.field(field=measurement, value=data[measurement])
@@ -49,7 +57,9 @@ class RuuviSniffer:
             try:
                 self.database.write(INFLUX_BUCKET, record=point)
             except InfluxDBError as e:
-                log.info(f"InfluxDBError: Error sending data from {mac} to {INFLUX_BUCKET}")
+                log.info(
+                    f"InfluxDBError: Error sending data from {mac} to {INFLUX_BUCKET}"
+                )
                 log.info(f"Error object: {e.__dict__}")
             except Exception as e:
                 log.info(f"Error sending data from {mac} to {INFLUX_BUCKET}")
@@ -59,7 +69,7 @@ class RuuviSniffer:
         self.data = {}
         self.latest_update = datetime.now()
 
-    
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     ruuvi = RuuviSniffer()
     ruuvi.start()
