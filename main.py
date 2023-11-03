@@ -23,6 +23,7 @@ log.addHandler(logging.StreamHandler(sys.stdout))
 
 class RuuviSniffer:
     def __init__(self) -> None:
+        log.info("Initializing RuuviSniffer")
         self.latest_update: datetime = datetime.now()
         self.data: dict = {}
         self.database = InfluxDBClient(
@@ -30,6 +31,7 @@ class RuuviSniffer:
         ).write_api(write_options=SYNCHRONOUS)
 
     def start(self):
+        log.info("Starting to scan")
         RuuviTagSensor.get_data(self.handle_data)
 
     def handle_data(self, bluetooth_data):
@@ -46,6 +48,7 @@ class RuuviSniffer:
             self.upload_data()
 
     def upload_data(self):
+        log.info("Uploading data")
         for mac, data in self.data.items():
             point = Point("ruuvi_measurements")
             for measurement in data:
