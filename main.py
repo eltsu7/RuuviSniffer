@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-import sys
+import asyncio
 
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from influxdb_client import InfluxDBClient, Point
@@ -17,8 +17,16 @@ from config import (
 )
 
 
-log = logging.Logger("ruuvisniffer")
-log.addHandler(logging.StreamHandler(sys.stdout))
+logging.basicConfig(
+    format="{asctime} {levelname} {message}",
+    style="{",
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler(filename="log"),
+        logging.StreamHandler(),
+    ],
+)
+log = logging.getLogger("ruuvisniffer")
 
 
 class RuuviSniffer:
@@ -30,18 +38,16 @@ class RuuviSniffer:
             url=INFLUX_HOST, token=INFLUX_TOKEN, org=INFLUX_ORG
         ).write_api(write_options=SYNCHRONOUS)
 
-    def start(self):
+    async def start(self):
         log.info("Starting to scan")
-        RuuviTagSensor.get_data(self.handle_data)
+        async for mac, data in RuuviTagSensor.get_data_async(SENSORS.keys()):
+            self.handle_data(mac, data)
 
-    def handle_data(self, bluetooth_data):
-        mac = bluetooth_data[0].replace(":", "")
-
+    def handle_data(self, mac: str, sensor_data: dict):
         # Don't do anything to not specified sensors
         if mac not in SENSORS.keys():
             return
 
-        sensor_data = bluetooth_data[1]
         self.data[mac] = sensor_data
 
         if (datetime.now() - self.latest_update).seconds > UPDATE_TIMEOUT:
@@ -75,4 +81,4 @@ class RuuviSniffer:
 
 if __name__ == "__main__":
     ruuvi = RuuviSniffer()
-    ruuvi.start()
+    asyncio.get_event_loop().run_until_complete(ruuvi.start())
