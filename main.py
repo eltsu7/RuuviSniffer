@@ -40,13 +40,10 @@ class RuuviSniffer:
 
     async def start(self):
         log.info("Starting to scan")
-        async for mac, data in RuuviTagSensor.get_data_async(SENSORS.keys()):
-            self.handle_data(mac, data)
+        RuuviTagSensor.get_data(callback=self.handle_data, macs=SENSORS.keys())
 
-    def handle_data(self, mac: str, sensor_data: dict):
-        # Don't do anything to not specified sensors
-        if mac not in SENSORS.keys():
-            return
+    def handle_data(self, data: tuple[str, dict]):
+        mac, sensor_data = data
 
         self.data[mac] = sensor_data
 
